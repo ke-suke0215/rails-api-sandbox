@@ -1,0 +1,25 @@
+FROM ruby:3.3.6-slim
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    vim \
+    locales \
+    locales-all \
+    default-mysql-client \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV LANG ja_JP.UTF-8
+
+RUN mkdir /rails
+WORKDIR /rails
+
+COPY Gemfile Gemfile.lock ./
+
+RUN bundle install
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["bin/rails", "server", "-b", "0.0.0.0"]
