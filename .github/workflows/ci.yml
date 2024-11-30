@@ -9,10 +9,11 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: api
 
     steps:
-      - uses: Kesin11/actions-timeline@v1
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -24,20 +25,17 @@ jobs:
 
       - name: Install dependencies
         run: bundle install
-        working-directory: ./api
 
       - name: Lint code for consistent style
         run: bin/rubocop -f github
-        working-directory: ./api
 
   scan_ruby:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: lint
-
+    defaults:
+      run:
+        working-directory: api
     steps:
-      - uses: Kesin11/actions-timeline@v1
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -49,16 +47,16 @@ jobs:
 
       - name: Install dependencies
         run: bundle install
-        working-directory: ./api
 
       - name: Scan for common Rails security vulnerabilities using static analysis
         run: bin/brakeman --no-pager
-        working-directory: ./api
 
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: lint
+    defaults:
+      run:
+        working-directory: api
 
     # services:
     #  redis:
@@ -67,8 +65,6 @@ jobs:
     #      - 6379:6379
     #    options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
-      - uses: Kesin11/actions-timeline@v1
-
       - name: Install packages
         run: sudo apt-get update && sudo apt-get install --no-install-recommends -y curl libjemalloc2 libvips sqlite3
 
@@ -83,11 +79,16 @@ jobs:
 
       - name: Install dependencies
         run: bundle install
-        working-directory: ./api
 
       - name: Run tests
         env:
           RAILS_ENV: test
           # REDIS_URL: redis://localhost:6379/0
         run: bundle exec rspec
-        working-directory: ./api
+
+  draw_timeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: Kesin11/actions-timeline@v1
