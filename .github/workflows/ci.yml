@@ -54,9 +54,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    defaults:
-      run:
-        working-directory: api
 
     # services:
     #  redis:
@@ -79,16 +76,21 @@ jobs:
 
       - name: Install dependencies
         run: bundle install
+        working-directory: ./api
 
       - name: Run tests
         env:
           RAILS_ENV: test
           # REDIS_URL: redis://localhost:6379/0
         run: bundle exec rspec
+        working-directory: ./api
 
+  # 各ジョブの実行時間をタイムライン形式で表示する
   draw_timeline:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # 表示したいジョブの後に実行する必要がある
+    needs: [lint, test, scan_ruby]
 
     steps:
       - uses: Kesin11/actions-timeline@v1
