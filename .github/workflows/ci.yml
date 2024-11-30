@@ -6,9 +6,34 @@ on:
     branches: [main]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: Kesin11/actions-timeline@v1
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Install dependencies
+        run: bundle install
+        working-directory: ./api
+
+      - name: Lint code for consistent style
+        run: bin/rubocop -f github
+        working-directory: ./api
+
   scan_ruby:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    needs: lint
 
     steps:
       - name: Checkout code
@@ -28,31 +53,10 @@ jobs:
         run: bin/brakeman --no-pager
         working-directory: ./api
 
-  lint:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: .ruby-version
-          bundler-cache: true
-
-      - name: Install dependencies
-        run: bundle install
-        working-directory: ./api
-
-      - name: Lint code for consistent style
-        run: bin/rubocop -f github
-        working-directory: ./api
-
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    needs: lint
 
     # services:
     #  redis:
@@ -61,8 +65,6 @@ jobs:
     #      - 6379:6379
     #    options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
-      - uses: Kesin11/actions-timeline@v1
-
       - name: Install packages
         run: sudo apt-get update && sudo apt-get install --no-install-recommends -y curl libjemalloc2 libvips sqlite3
 
