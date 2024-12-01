@@ -93,4 +93,4 @@ jobs:
     needs: [lint, test, scan_ruby]
 
     steps:
-      - uses: Kesin11/actions-timeline@v1
+      - uses: Kesin11/actions-timeline@v2
